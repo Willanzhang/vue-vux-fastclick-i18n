@@ -1,18 +1,19 @@
 import * as axios from '../common/js/axios.js'
-// 期号列表
-const getIssueList = params => axios.post('/index.php/snatch/queryIgouIssueList', params)
-// 每期详情
-const getIssueDetail = params => axios.post('/index.php/snatch/queryIgouIssueDetail', params)
+// 登录
+const getLogin = params => axios.post('/index.php/account/nbaUnioLogin', params)
 
-// 获取首页轮播图
-const getFistRollPic = params => axios.post('/index.php/address/getFistRollPic', params)
+// 首页信息
+const getHomeInfo = params => axios.post('/index.php/nbamatch/homePageInfo', params)
 
-// 获取首页销量
-const getTotalSaleNum = params => axios.post('/index.php/statistics/api/getTotalSaleNum', params)
+// 解锁关卡
+const openIssuePass = params => axios.post('/index.php/deal/openIssuePass', params)
+
+// 投注
+const getJoinGuess = params => axios.post('/index.php/deal/mixJoinGuess', params)
 
 export {
-  getIssueList,
-  getIssueDetail,
-  getFistRollPic,
-  getTotalSaleNum
+  getLogin,
+  getHomeInfo,
+  getJoinGuess,
+  openIssuePass
 }

@@ -2,7 +2,7 @@
   <div class="loadingPlugins" v-if="state">
     <div class="loadingcontainer">
       <img width="30" height="30" src="../img/loading.gif" alt="">
-      <p class="desc">loading</p>
+      <p class="desc">加载中...</p>
     </div>
   </div>
 </template>
@@ -23,7 +23,7 @@
     z-index:2002
     height:100%
     width:100%
-    background:rgba(255,255,255,.6)
+    background:rgba(0,0,0,.6)
     display:flex
     justify-content:center
     align-items:center
@@ -33,6 +33,6 @@
       p
         text-align:center
         font-size:0.3rem
-        color:#333
+        color:#fff
 </style>
 

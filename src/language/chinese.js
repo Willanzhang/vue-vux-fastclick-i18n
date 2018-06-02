@@ -1,9 +1,21 @@
 export default {
   meta: {
-    index: '首页'
+    index: '首页',
+    list: '记录',
+    kiting: '转出',
+    userCenter: '个人中心'
   },
   home: {
     title: '超级NBA夺宝'
+  },
+  list: {
+    title: '夺宝记录'
+  },
+  userCenter: {
+    title: '个人中心'
+  },
+  kiting: {
+    title: '转出'
   },
   question: {
     helpTitle: 'Ayuda',

@@ -1,5 +1,5 @@
 export default function getBaseUrl () {
-  let [baseUrl, urls, protocol] = ['https://mdev.1peso.com.mx', location.href.toLowerCase(), 'http://']
+  let [baseUrl, urls, protocol] = ['https://apidev.66jingcai.cn', location.href.toLowerCase(), 'http://']
   // 判断协议
   if (location.protocol === 'https:') {
     protocol = 'https://'

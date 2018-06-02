@@ -1,9 +1,9 @@
 import Loading from './loading/loading'
-import Message from './message/message'
+// import Message from './message/message'
 import Errorplugins from './error/error'
 
 export {
   Loading,
-  Message,
+  // Message,
   Errorplugins
 }
