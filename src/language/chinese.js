@@ -1,15 +1,15 @@
 export default {
   meta: {
-    index: '首页',
-    list: '记录',
+    index: '超级NBA夺金',
+    game: '超级NBA夺金',
     kiting: '转出',
     userCenter: '个人中心'
   },
   home: {
-    title: '超级NBA夺宝'
+    title: '超级NBA夺金'
   },
-  list: {
-    title: '夺宝记录'
+  game: {
+    title: '超级NBA夺金'
   },
   userCenter: {
     title: '个人中心'

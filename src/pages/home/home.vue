@@ -1,382 +1,277 @@
 <template>
 <transition name="slide">
   <div class="home">
-    <div class="headerTop">
-      <x-header style="background-color:#ffcc00;arrow-color:#fff;" :left-options="{backText: ''}">{{$t('home.title')}}</x-header>
+    <!--<x-header style="background-color:#ffcc00;arrow-color:#fff;" :left-options="{backText: '',preventGoBack:true}" @on-click-back="goTheirHome">{{$t('home.title')}}</x-header>-->
+     <div class="userInfo">
+      <div class="userLogo" @click="goUserPage">
+        <img :src="userInfo.picture" class="logoImg"></img>
+      </div>
+      <div class="nickname">
+        {{userInfo.nickname}} {{lkey}}
+      </div>
+      <!--<div class="cupImg">
+      </div>-->
+      <div class="listButton" @click="goUserPage">
+        红包余额： {{cash}}
+      </div>
     </div>
-    <prizemode
-      :showPrize="prizeModeState"
-      :prizeTotal="firstPrize.prizeMoney"
-      :needGold="lockSectionInfo.allOpenMoney"
-      @hidePrizeMode="hidePrizeMode"
-      @sureJoin = "sureJoin"
-    ></prizemode>
-    <scroll
-      :listenScroll="listenScroll"
-      :data="matchPreview"
-      @scroll="scrolls"
-      @scrollDown="pullUp"
-      @pullDown="pullDowns"
-      class="scrollContent">
-        <div class="bigBox">
-          <!--<div style="height: 46px"></div>-->
-          <div class="userInfo">
-            <div class="userLogo">
-              <img :src="userInfo.picture" class="logoImg" @click="goUserPage"></img>
-            </div>
-            <div class="nickname">
-              {{userInfo.nickname}}
-            </div>
-            <!--<div class="cupImg">
-            </div>-->
-            <!--<div class="listButton" @click="goListPage">
-              夺宝记录
-            </div>-->
-          </div>
-          <div class="notice">
-            <!--<div class="noticeLogo">
-            </div>
-            <div class="noticeContent" >
-              <ul id="notice"  ref="noticeContent" class="clearfix">
-                <li v-for="(val, index) in recordsList" :key="index">
-                  “{{val.nickname}}”抽中了<span>{{val.prizesName}}</span><span>~</span>
-                </li>
-                <li v-if="recordsList.length >= 1">“{{firstRecord.nickname}}”抽中了<span>{{firstRecord.prizesName}}</span><span>~</span></li>
-              </ul>
-            </div>-->
-          </div>
-          <div class="matchInfo">
-            <div class="teamInfo">
-              <div class="teamName">
-                {{data.homeTeamName}}（主队）
-                <div class="nowScoreLeft">{{matchScore.homeTeamScore}}</div>
+    <!--<div class="notice">
+      <div class="noticeLogo">
+      </div>
+      <div class="noticeContent" ref="noticeBox">
+        <ul id="notice"  ref="noticeContent" class="clearfix">
+          <li v-for="(val, index) in recordsList" :key="index">
+            {{val}}
+          </li>
+          <li v-if="recordsList.length >= 1">{{firstRecord}}</li>
+        </ul>
+      </div>
+    </div>-->
+    <div class="noticeB" v-if="recordsList.length > 0">
+      <div class="noticeLogo">
+      </div>
+      <div class="noticeContent" ref="noticeBox">
+        <div id="notice"  ref="ulBox" class="clearfix divBox"><span v-for="(val, index) in recordsList" :key="index">{{val}}</span><span>{{recordsList[0]}}</span></div>
+      </div>
+    </div>
+    <div class="swiperContainer" v-if="!iphone5 && isAjax" ref="swiperContainer">
+      <swiper v-if="matchList.length >= 1" class="dx" style="height: 440px;" height="400px"  dots-class="botS" :min-moving-distance="moveDistance" :show-dots="matchList.length > 1" dots-position="center" @on-index-change="onSwiperItemIndexChange" v-model="levelIndex">
+        <swiper-item class="swiper-demo-img" v-for="(item, index) in matchList" :key="index">
+          <div class="swiperUntil">
+            <div class="topB">
+              <div class="downTime" v-if="distanceNow(item.matchTime) != -1">
+                距比赛开始时间还有{{item.matchTime | distanceNow}}小时
               </div>
-              <div class="space"></div>
-              <div class="teamName text-right">
-                （客队）{{data.guestTeamName}}
-                <div class="nowScoreRight">{{matchScore.guestTeamScore}}</div>
+              <div v-else class="downTime">
+                比赛进行中
               </div>
-            </div>
-            <div class="matchScore">
-              <div class="nowUntil">{{data.matchStageDesc}}</div>
-              <!--<div class="nowUntil" v-else>{{data.runningSectionId | matchStateType(data.matchState)}}</div>-->
-              <div class="scoreUntil">
-                <div class="teamBoth">
-                  <div class="everyNode text-center">
+              <div class="battleBoth">
+                <!--<div class="top">NBA总决赛</div>-->
+                <div class="top">{{item.leagueName}}</div>
+                <div class="both">
+                  <div class="homeTeam">
+                    <div class="logo">
+                      <img :src="item.homeTeamLogoUrl" alt="">
+                    </div>
+                    <div class="name">{{item.homeTeamName}}</div>
                   </div>
-                  <div class="middle text-left ellipsis">
-                    {{data.homeTeamName}}
-                  </div>
-                  <div class="bottom text-left ellipsis">
-                    {{data.guestTeamName}}
-                  </div>
-                </div>
-                <div class="chooseUntil">
-                  <div class="everyNode text-center">
-                    1
-                  </div>
-                  <div class="middle">
-                    {{matchScore.homeFirstScore !== '' ? matchScore.homeFirstScore : '-'}}
-                  </div>
-                  <div class="bottom">
-                    {{matchScore.guestFirstScore !== '' ? matchScore.guestFirstScore  : '-'}}
+                  <div class="vs">VS</div>
+                  <div class="guestTeam">
+                    <div class="logo">
+                      <img :src="item.guestTeamLogoUrl" alt="">
+                    </div>
+                    <div class="name">{{item.guestTeamName}}</div>
                   </div>
                 </div>
-                <div class="chooseUntil">
-                  <div class="everyNode text-center">
-                    2
-                  </div>
-                  <div class="middle">
-                    {{matchScore.homeSecondScore !== '' ? matchScore.homeSecondScore : '-'}}
-                  </div>
-                  <div class="bottom">
-                    {{matchScore.guestSecondScore !== '' ? matchScore.guestSecondScore : '-'}}
-                  </div>
-                  <!-- 下面这样 text-align 对不齐 -->
-                  <!-- <div class="bottom">31</div> -->
-                </div>
-                <div class="chooseUntil">
-                  <div class="everyNode text-center">
-                    3
-                  </div>
-                  <div class="middle">
-                    {{matchScore.homeThirdScore !== '' ? matchScore.homeThirdScore : '-'}}
-                  </div>
-                  <div class="bottom">
-                    {{matchScore.guestThirdScore !== '' ? matchScore.guestThirdScore : '-'}}
-                  </div>
-                </div>
-                <div class="chooseUntil">
-                  <div class="everyNode text-center">
-                    4
-                  </div>
-                  <div class="middle">
-                    {{matchScore.homeFourthScore !== '' ? matchScore.homeFourthScore : '-'}}
-                  </div>
-                  <div class="bottom">
-                    {{matchScore.guestFourthScore !== '' ?matchScore.guestFourthScore : '-'}}
-                  </div>
-                </div>
-                <div class="chooseUntil allMatch">
-                  <div class="everyNode text-center">
-                    全场
-                  </div>
-                  <div class="middle">
-                    {{matchScore.homeTeamScore !== '' ? matchScore.homeTeamScore : '-'}}
-                  </div>
-                  <div class="bottom">
-                    {{matchScore.guestTeamScore !== '' ? matchScore.guestTeamScore : '-'}}
-                  </div>
-                </div>
-            
+              </div>
+              <div class="prize">
+                <!--<div class="prizeText">总价值5000元红包</div>-->
+                <div class="prizeText">总价值{{item.prizeInfo[0].prizeMoney}}元{{item.prizeInfo[0].goodsName}}</div>
+              </div>
+              <div class="playNotice">
+                玩法介绍:全部猜中每节及全场赛果可获得
               </div>
             </div>
-            <div class="joinPeople bline xv">
-              <div class="people">参与人数：{{data.hasJoinedPeopleNum}}</div>
-              <!--<div class="aboutShank" @click="showShank">当前排名</div>-->
+            <div v-if="item.lockSectionInfo.hasJoined === 0 && item.lockSectionInfo.isAllFree === 0 && item.lockSectionInfo.isLockAll === 1" class="bottom" @click="sureJoin(item)">
+              马上报名 {{item.lockSectionInfo.allOpenMoney/100}}虎扑币参与
+            </div>
+            <div v-else-if="item.lockSectionInfo.hasJoined === 0 && item.lockSectionInfo.isAllFree === 1 && item.lockSectionInfo.isLockAll === 0" class="bottom" @click="goGamePage(item)">
+              马上报名 免费参与
+            </div>
+            <div v-else class="bottom green" @click="goGamePage(item)">
+              已经参与 立即查看
             </div>
           </div>
-          <div class="levelTab">
-            <!--ended-->
-            <div class="tabList" @click="goTab(0)" :class="{choose: levelIndex == 0}">全场</div>
-            <div class="tabList" @click="goTab(1)" :class="{choose: levelIndex == 1}">第1节</div>
-            <div class="tabList" @click="goTab(2)" :class="{choose: levelIndex == 2}">第2节</div>
-            <div class="tabList" @click="goTab(3)" :class="{choose: levelIndex == 3}">第3节</div>
-            <div class="tabList" @click="goTab(4)" :class="{choose: levelIndex == 4}">第4节</div>
-          </div>
-          <div class="rule">
-            <div class="ruleText text-center">
-              猜每小节胜平负及大小分两种结果
-            </div>
-            <div class="questionIcon">
-              <!--<x-icon type="ios-help-outline" size="24" style="vertical-align: middle;"></x-icon>-->
-            </div>
-          </div>
-          <div class="choiceContent">
-            <!--<div class="guessMask" ref="guessMask"></div>-->
-            <!--164-->
-            <!--height="190px" -->
-            <swiper height="190px" :min-moving-distance="moveDistance" :show-dots="false" @on-index-change="onSwiperItemIndexChange" v-model="levelIndex">
-              <swiper-item class="swiper-demo-img" v-for="(item, index) in levelList" :key="index">
-                <div class="guessContent">
-                  <div class="guessTop">
-                    <div class="guessTitle text-center">猜胜负<div class="arrowRight"></div></div>
-                    <div class="chooseUntil" :class="[{result:item.spf.drawResult == '0'},{choosed: item.spf.temChoose == '0' || item.spf.myBetItem == '0'},{chooseErr: item.spf.myBetItem == '0' && '0' !== item.spf.drawResult && item.spf.drawResult},{choosePass: item.spf.myBetItem == '0' && '0' == item.spf.drawResult}]" @click="guessWin(index,item,'spf', '0')">
-                      <div class="teamLogo"><img :src="data.homeTeamLogoUrl" alt=""></div>
-                      <div class="teamName">{{data.homeTeamName}}胜</div>
-                    </div>
-                    <div class="spaceLine"></div>
-                    <!--chooseErr result-->
-                    <div v-if="item.sectionId !=5" class="chooseUntil" :class="[{result:item.spf.drawResult == '1'},{choosed: item.spf.temChoose == '1' || item.spf.myBetItem == '1'},{chooseErr: item.spf.myBetItem == '1' && '1' !== item.spf.drawResult && item.spf.drawResult},{choosePass: item.spf.myBetItem == '1' && '1' == item.spf.drawResult}]" @click="guessWin(index,item,'spf', '1')">
-                      <div class="teamLogo">
-                      </div>
-                      <div class="teamName">平</div>
-                    </div>
-                    <div v-if="item.sectionId == 5" class="chooseUntil">
-                      <div class="scoreAll">赛果含加时</div>
-                    </div>
-                    <div class="spaceLine"></div>
-                    <div class="chooseUntil" :class="[{result:item.spf.drawResult == '3'},{choosed: item.spf.temChoose == '3' || item.spf.myBetItem == '3'},{chooseErr: item.spf.myBetItem == '3' && '3' !== item.spf.drawResult && item.spf.drawResult},{choosePass: item.spf.myBetItem == '3' && '3' == item.spf.drawResult}]" @click="guessWin(index,item,'spf', '3')">
-                      <div class="teamLogo"><img :src="data.guestTeamLogoUrl" alt=""></div>
-                      <div class="teamName">{{data.guestTeamName}}胜</div>
+        </swiper-item>
+      </swiper>
+      <swiper v-else class="dx" style="height: 440px;" height="400px"  dots-class="botS" :min-moving-distance="moveDistance" :show-dots="false" dots-position="center" @on-index-change="onSwiperItemIndexChange" v-model="levelIndex">
+        <swiper-item class="swiper-demo-img">
+          <div class="swiperUntil">
+            <div class="topB">
+              <div style="height: .42rem">
+              </div>
+              <div class="battleBoth">
+                <!--<div class="top">NBA总决赛</div>-->
+                <div class="top"></div>
+                <div class="both">
+                  <div class="homeTeam">
+                    <div class="logo">
                     </div>
                   </div>
-                  <div class="guessBottom text-center">
-                    <!--choosed-->
-                    <!--result-->
-                    <!--chooseErr-->
-                    <!--choosePass-->
-                    <div class="guessTitle">猜大小分<div class="arrowRight"></div></div>
-                    <div class="chooseUntil" :class="[{result:item.dxf.drawResult == 'GT'},{choosed: item.dxf.temChoose == 'GT' || item.dxf.myBetItem == 'GT'},{chooseErr: item.dxf.myBetItem == 'GT' && 'GT' !== item.dxf.drawResult && item.dxf.drawResult},{choosePass: item.dxf.myBetItem == 'GT' && 'GT' == item.dxf.drawResult}]" @click="guessScore(index,item,'dxf', 'GT')">
-                      <div class="teamLogo upScore">
-                      </div>
-                      <div class="teamName">高于{{item.dxf.dxfBetItem.GT}}</div>
-                    </div>
-                    <div class="spaceLine"></div>
-                    <!--chooseErr-->
-                    <!--choosePass-->
-                    <div 
-                      class="chooseUntil" 
-                      :class="[{result:item.dxf.drawResult == 'EQ'},{choosed: item.dxf.temChoose == 'EQ' || item.dxf.myBetItem == 'EQ'},{chooseErr: item.dxf.myBetItem == 'EQ' && 'EQ' !== item.dxf.drawResult && item.dxf.drawResult},{choosePass: item.dxf.myBetItem == 'EQ' && 'EQ' == item.dxf.drawResult}]" @click="guessScore(index,item,'dxf', 'EQ')">
-                      <div class="teamLogo isScore">
-                      </div>
-                      <div class="teamName">正好{{item.dxf.dxfBetItem.EQ}}</div>
-                    </div>
-                    <div class="spaceLine"></div>
-                    <div class="chooseUntil" :class="[{result:item.dxf.drawResult == 'LT'},{choosed: item.dxf.temChoose == 'LT' || item.dxf.myBetItem == 'LT'},{chooseErr: item.dxf.myBetItem == 'LT' && item.dxf.drawResult && 'LT' !== item.dxf.drawResult},{choosePass: item.dxf.myBetItem == 'LT' && 'LT' == item.dxf.drawResult}]" @click="guessScore(index,item,'dxf', 'LT')">
-                      <div class="teamLogo downScore">
-                      </div>
-                      <div class="teamName">低于{{item.dxf.dxfBetItem.LT}}</div>
+                  <div class="noVs">今日暂无比赛</div>
+                  <div class="guestTeam">
+                    <div class="logo">
                     </div>
                   </div>
                 </div>
-              </swiper-item>
-            </swiper>
-          </div>
-          <div class="ordersButton relative">
-            <div class="button" v-if="this.levelList[this.levelIndex].state < 2 && !this.levelList[this.levelIndex].dxf.myBetItem" @click="joinGame">确定</div>
-            <!--<div class="button" @click="joinGame">确定</div>-->
-          </div>
-          <!--夺宝奖励-->
-          <div class="prize">
-            <div class="prizeTitle">
-              本期夺宝奖励 <span>猜中相同次数得用户可平分奖池</span>
-            </div>
-            <div class="prizeInfo">
-              <div class="left">
-                <div class="passLevel" v-if="secondPrize.passNumber">中{{secondPrize.passNumber}}次</div>
-                <div class="passLevel" v-else></div>
-                <div class="prizeImg">
-                  <img v-if="secondPrize.goodsIcon" :src="secondPrize.goodsIcon" alt="">
-                  <img else src="./img/jd.png" alt="">
-                </div>
-                <div class="prizeName" v-if="secondPrize.prizeMoney">总价值{{secondPrize.prizeMoney}}元</div>
-                <div class="prizeName" v-else>暂未开放</div>
               </div>
-              <div class="middle">
-                <div class="passLevel" v-if="firstPrize.passNumber">中{{firstPrize.passNumber}}次</div>
-                <div class="passLevel" v-else></div>
-                <div class="prizeImg">
-                  <img v-if="firstPrize.goodsIcon" :src="firstPrize.goodsIcon" alt="">
-                  <img v-else src="./img/packet.png" alt="">
-                </div>
-                <div class="prizeName" v-if="firstPrize.prizeMoney">总价值{{firstPrize.prizeMoney}}元</div>
-                <div class="prizeName" v-else>暂未开放</div>
+              <div class="prize">
+                <!--<div class="prizeText">总价值5000元红包</div>-->
+                <div class="prizeText">大奖在路上</div>
               </div>
-              <div class="right">
-                <div class="passLevel" v-if="thirdPrize.passNumber">中{{thirdPrize.passNumber}}次</div>
-                <div class="passLevel" v-else></div>
-                <div class="prizeImg">
-                  <img v-if="thirdPrize.goodsIcon" :src="thirdPrize.goodsIcon" alt="">
-                  <img v-else src="./img/KingofGlory.png" alt="">
-                </div>
-                <div class="prizeName" v-if="thirdPrize.prizeMoney">总价值{{thirdPrize.prizeMoney}}元</div>
-                <div class="prizeName" v-else>暂未开放</div>
+              <div class="playNotice">
+                玩法介绍:全部猜中每节及全场赛果可获得
               </div>
             </div>
+            <div class="bottom">
+              敬请期待
+            </div>
           </div>
-          <div class="matchListBox">
-            <div class="matchListTitle">夺宝赛程</div>
-            <ul class="matchLists">
-              <li class="bline xv" v-for="(item, index) in matchPreview">
-                <span class="timeFormat ellipsis">{{item.matchTime |timeFormat('MM-dd')}} {{item.matchTime |timeFormat('hh:mm')}}</span>
-                 <!--<span>{{item.matchTime | getNow}}</span>-->
-                <span class="battleBoth ellipsis">{{item.homeTeamName}}</span>
-                <span>VS</span>
-                <span class="battleBoth ellipsis">{{item.guestTeamName}}</span>
-                <span class="totalPrize ellipsis text-center">总价值{{item.prizeMoney}}元{{item.goodsName}}</span>
-              </li>
-              <li class="bline xv" v-if="matchPreview.length == 0">
-                暂无赛事
-              </li>
-            </ul>
+        </swiper-item>
+      </swiper>
+    </div>
+    <div class="swiperContainer" v-if="iphone5 && isAjax" ref="swiperContainer">
+      <swiper v-if="matchList.length >= 1" style="height: 390px;" height="350px"  dots-class="botS" :min-moving-distance="moveDistance" :show-dots="matchList.length > 1" dots-position="center" @on-index-change="onSwiperItemIndexChange" v-model="levelIndex">
+        <swiper-item class="swiper-demo-img" v-for="(item, index) in matchList" :key="index">
+          <div class="swiperUntil">
+            <div class="topB">
+              <div class="downTime" v-if="distanceNow(item.matchTime) != -1">
+                距比赛开始时间还有{{item.matchTime | distanceNow}}小时
+              </div>
+              <div v-else class="downTime">
+                比赛进行中
+              </div>
+              <div class="battleBoth">
+                <!--<div class="top">NBA总决赛</div>-->
+                <div class="top">{{item.leagueName}}</div>
+                <div class="both">
+                  <div class="homeTeam">
+                    <div class="logo">
+                      <img :src="item.homeTeamLogoUrl" alt="">
+                    </div>
+                    <div class="name">{{item.homeTeamName}}</div>
+                  </div>
+                  <div class="vs">VS</div>
+                  <div class="guestTeam">
+                    <div class="logo">
+                      <img :src="item.guestTeamLogoUrl" alt="">
+                    </div>
+                    <div class="name">{{item.guestTeamName}}</div>
+                  </div>
+                </div>
+              </div>
+              <div class="prize">
+                <!--<div class="prizeText">总价值5000元红包</div>-->
+                <div class="prizeText">总价值{{item.prizeInfo[0].prizeMoney}}元{{item.prizeInfo[0].goodsName}}</div>
+              </div>
+              <div class="playNotice">
+                玩法介绍:全部猜中每节及全场赛果可获得
+              </div>
+            </div>
+            <div v-if="item.lockSectionInfo.hasJoined === 0 && item.lockSectionInfo.isAllFree === 0 && item.lockSectionInfo.isLockAll === 1" class="bottom" @click="sureJoin(item)">
+              马上报名 {{item.lockSectionInfo.allOpenMoney/100}}虎扑币参与
+            </div>
+            <div v-else-if="item.lockSectionInfo.hasJoined === 0 && item.lockSectionInfo.isAllFree === 1 && item.lockSectionInfo.isLockAll === 0" class="bottom" @click="goGamePage(item)">
+              马上报名 免费参与
+            </div>
+            <div v-else class="bottom green" @click="goGamePage(item)">
+              已经参与 立即查看
+            </div>
           </div>
-          <div style="height: .3rem"></div>
-        </div>
-    </scroll>
+        </swiper-item>
+      </swiper>
+      <swiper v-else class="dx" style="height: 390px;" height="350px"  dots-class="botS" :min-moving-distance="moveDistance" :show-dots="false" dots-position="center" @on-index-change="onSwiperItemIndexChange" v-model="levelIndex">
+        <swiper-item class="swiper-demo-img">
+          <div class="swiperUntil">
+            <div class="topB">
+              <div style="height: .42rem">
+              </div>
+              <div class="battleBoth">
+                <!--<div class="top">NBA总决赛</div>-->
+                <div class="top"></div>
+                <div class="both">
+                  <div class="homeTeam">
+                    <div class="logo">
+                    </div>
+                  </div>
+                  <div class="noVs">今日暂无比赛</div>
+                  <div class="guestTeam">
+                    <div class="logo">
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="prize">
+                <!--<div class="prizeText">总价值5000元红包</div>-->
+                <div class="prizeText">大奖在路上</div>
+              </div>
+              <div class="playNotice">
+                玩法介绍:全部猜中每节及全场赛果可获得
+              </div>
+            </div>
+            <div class="bottom">
+              敬请期待
+            </div>
+          </div>
+        </swiper-item>
+      </swiper>
+    </div>
     <transition name="fade">
       <shank v-if="shank" @hideshank="hideShankNow"></shank>
     </transition>
   </div>
 </transition>
 </template>
-<style>
-  .clas {
-    flex-wrap: wrap;
-  }
-</style>
+
 <script>
-  import { getLogin, getHomeInfo, getJoinGuess, openIssuePass } from '@/api/home'
+  import { mapMutations, mapState, mapActions } from 'vuex'
+  import { getLogin, getMatchList, openIssuePass } from '@/api/home'
   import scroll from '@/components/scroll/scroll'
   import loading from '@/components/loading/loading'
   import shank from '@/components/shank/shank'
-  import prizemode from '@/components/prizemode/prizemode'
-  import { mapState } from 'vuex'
-  import { XHeader, Swiper, SwiperItem, Checker, CheckerItem, Confirm } from 'vux'
-  // import { clearInterval } from 'timers';
-  let temObj = {
-    'spf': {
-      'spfBetItem': {
-        '0': '',
-        '1': '',
-        '2': ''
-      },
-      'drawResult': '',
-      'myBetItem': '',
-      'playId': ''
-    },
-    'dxf': {
-      'dxfBetItem': {
-        'EQ': '',
-        'GT': '',
-        'LT': ''
-      },
-      'drawResult': '',
-      'myBetItem': '',
-      'playId': ''
-    },
-    'sectionId': '',
-    'issueNo': '',
-    'state': '',
-    'beginTime': '',
-    'endTime': ''
-  }
+  import { Divider, XButton, XHeader, Swiper, SwiperItem } from 'vux'
   export default {
     data () {
       return {
         listenScroll: true,
         shank: false,
-        step: 10,
-        data: {},
-        moveDistance: 80,
-        prizeModeState: false, // 奖品弹窗状态
-        userCode: '',
         userInfo: {},
-        lockSectionInfo: {},
-        firstPrize: {},
-        secondPrize: {},
-        lkey: '',
-        recharge: false,
-        isPull: false,
-        isHaveMatch: false,
-        thirdPrize: {},
-        matchPreview: [], // 赛事预告数据
-        prizeInfo: [], // 奖品信息
-        matchScore: {}, // 每节得分情况
-        matchSectionBet: [], // 每节比赛投注信息
-        levelArr: [{name: '全场'}, {name: 1}, {name: 2}, {name: 3}, {name: 4}], // 关卡数量
-        levelList: [temObj, temObj, temObj, temObj, temObj], // 关卡数量
+        step: 10,
+        matchList: [],
+        isAjax: false,
+        data: {},
+        sum: 0,
+        cash: null,
+        iphone5: false,
+        swiperHeight: '200px',
+        moveDistance: 80,
+        levelArr: [{name: 1}, {name: 2}, {name: 3}, {name: 4}, {name: '全场'}], // 关卡数量
         levelIndex: 0, // 当前关卡索引
         runTimer: null, // 计时器
-        recordsList: [{nickname: 'hah', prizesName: '超级奔驰'}, {nickname: 'lxt', prizesName: 'ps4'}, {nickname: 'lxt', prizesName: 'ps4'}, {nickname: 'lxt', prizesName: 'ps4'}, {nickname: 'lxt', prizesName: 'ps4'}, {nickname: 'lxt', prizesName: 'ps4'}, {nickname: 'lxt', prizesName: '反正我也不知道是什么'}], // 消息列表
-        firstRecord: {nickname: 'hah', prizesName: '超级奔驰'} // 轮播最后重复第一个
+        recordsList: [], // 消息列表
+        firstRecord: '' // 轮播最后重复第一个
       }
     },
     created () {
-      console.log('create7889')
       let localUserCode = window.localStorage.getItem('userCodeNBA')
       let lkey = window.localStorage.getItem('lkeyNBA')
       let userInfo = window.localStorage.getItem('userInfoNBA')
       this.userCode = this.$route.query.userCode || ''
-      console.log(this.userCode, 'this.userCode')
       if (localUserCode !== this.userCode || !lkey || !userInfo) {
-        let params = {userCode: this.userCode}
+        let params = {userCode: this.userCode, timestamp: this.$route.query.timestamp, sign: this.$route.query.sign}
         getLogin(params).then(res => {
           if (res.data.errCode === 0) {
-            console.log('11111')
             this.userInfo = res.data.data
             this.lkey = res.data.data.lkey
             window.localStorage.setItem('lkeyNBA', res.data.data.lkey)
             window.localStorage.setItem('userInfoNBA', JSON.stringify(res.data.data))
             window.localStorage.setItem('userCodeNBA', this.userCode)
-            // let that = this
-            // console.log(22222)
-            // setTimeout(function () {
-            //   console.log('xxxxx')
-            //   that.getPageInfo()
-            // }, 50)
+            this.setLkey(res.data.data.lkey)
+            // console.log(this.$store)
             this.getPageInfo()
           } else {
+            this.$vux.toast.show({
+              position: 'middle',
+              type: 'text',
+              width: '16em',
+              time: 700,
+              text: '登录失败',
+              isShowMask: true
+            })
+            window.localStorage.removeItem('lkeyNBA')
+            window.localStorage.removeItem('userInfoNBA')
+            window.localStorage.removeItem('userCodeNBA')
+            this.setCookie('lkey', '')
           }
         })
       } else {
@@ -384,21 +279,112 @@
         this.userInfo = JSON.parse(window.localStorage.getItem('userInfoNBA'))
       }
     },
+    computed: {
+      ...mapState([
+        'lkey'
+      ]),
+      vuexLkey () {
+        return this.$store.state.lkey
+      }
+    },
     mounted () {
+      let height = document.body.clientHeight
+      if (height <= 568) {
+        this.iphone5 = true
+        this.swiperHeight = '300px'
+      }
+      // this.noticeSwiper()
     },
     destroyed () {
       clearInterval(this.runTimer)
     },
     methods: {
+      ...mapActions([
+        'geMyInfo'
+      ]),
+      ...mapMutations({
+        setLkey: 'SET_LKEY'
+      }),
+      setCookie (name, value) {
+        document.cookie = `${name} = ${value};path=/`
+      },
+      goTheirHome () {
+        window.location.href = `${this.data.rechargeUrl}?user_code=${this.userCode}/#/tab/home`
+      },
+      getPageInfo () {
+        let params = {
+          betType: 'JCHH',
+          lotyId: 'JCLQ',
+          page: 1,
+          pageSize: 10,
+          lkey: this.lkey
+        }
+        getMatchList(params).then(res => {
+          if (res.data.errCode === 0) {
+            this.matchList = res.data.data.matchList
+            this.data = res.data.data
+            this.cash = res.data.data.cash
+            this.rechargeUrl = res.data.data.rechargeUrl
+            window.localStorage.setItem('rechargeUrl', this.rechargeUrl)
+            this.recordsList = [...res.data.data.broadcastInfo, ...res.data.data.broadcastInfo]
+            this.firstRecord = res.data.data.broadcastInfo.slice(0, 1)
+            this.isAjax = true
+            if (this.recordsList.length > 0) {
+              this.$nextTick(() => {
+                this.textSwiper()
+              })
+            }
+          }
+        })
+      },
+      textSwiper () {
+        let ulBox = this.$refs.ulBox
+        let liArr = ulBox.children
+        let recordsLength = this.recordsList.length
+        let noEnd
+        let tureArr = Array.prototype.slice.call(liArr)
+        let lastSpan = tureArr.pop()
+        this.sum = 0
+        tureArr.forEach((val, index) => {
+          this.sum = this.sum + val.clientWidth
+        })
+        tureArr.push(lastSpan)
+        noEnd = this.sum - lastSpan.clientWidth
+        ulBox.style.width = this.sum + 'px'
+        this.sum = 0
+        // 此处setTimeout 是为了使dom结构完全渲染 解决 计算属性宽度不准确
+        window.setTimeout(() => {
+          tureArr.forEach((val, index) => {
+            this.sum = this.sum + val.clientWidth
+          })
+          noEnd = this.sum - lastSpan.clientWidth
+          // 此处 + 10 是因为计算结果是整数 有误差 会把 最后一个span 挤下去
+          ulBox.style.width = this.sum + 10 + 'px'
+          recordsLength = this.recordsList.length
+          if (recordsLength <= 0) return
+          this.runTimer = window.setInterval(() => {
+            this.step++
+            ulBox.style.transform = `translateX(-${this.step}px)`
+            if (this.recordsList.length >= 1) {
+            }
+            if (this.step >= noEnd) {
+              this.step = 0
+            }
+          }, 25)
+        }, 10)
+        // window.setTimeout(() => {
+      },
       // 消息喇叭
       noticeSwiper () {
         let noticeContent = this.$refs.noticeContent
-        // let guessMask = this.$refs.guessMask
-        // console.log(guessMask, 'guessMask')
-        // guessMask.addEventListener('touchstart', (e) => {
-        //   event.preventDefault()
-        //   console.log(e, '110')
-        // })
+        let noticeBox = this.$refs.noticeBox
+        let noticeBoxWidth = window.getComputedStyle(noticeBox, null).width
+        let liArr = noticeContent.children
+        // [].forEach.bind(liArr)
+        let tureArr = Array.prototype.slice.call(liArr)
+        tureArr.forEach((val) => {
+          noticeContent.style.width = noticeBoxWidth
+        })
         let recordsLength = this.recordsList.length
         // window.setTimeout(() => {
         let temp = recordsLength + 1
@@ -413,173 +399,29 @@
           }
           if (this.step >= recordsLength * parseInt(this.liWidth)) {
             this.step = 0
+            noticeContent.style.transform = `translateX(-${this.step}px)`
           }
-        }, 30)
+        }, 25)
         // }, 500)
-        console.log(noticeContent.clientWidth, 'refs')
       },
-      pullUp () {
-        console.log('下拉加载中')
-        // if (this.curPage >= this.totalPage) {
-        //   return
-        // }
-        // this.loading = true
-        // this.$loading({
-        //   state: true
-        // })
-        // this.loadMore()
-      },
-      scrollDowns () {
-        // 触底加载+-
-      },
-      pullDowns () {
-        console.log('下拉加载')
-        this.getPageInfo()
-        this.isPull = true
-        // 下拉刷新
-      },
-      scrolls () {
-        console.log('在滚动')
-      },
-      getPageInfo () {
-        this.$loading({
-          state: true
-        })
-        // let that = this
-        getHomeInfo({pageSize: '10', page: '1', lotyId: 'JCLQ', betType: 'JCHH', lkey: this.lkey || localStorage.getItem('lkeyNBA')}).then(res => {
-          if (res.data.errCode === 0) {
-            console.log(res.data.data, 'res.-**-')
-            this.data = res.data.data
-            // this.levelIndex = res.data.data.runningSectionId || 0
-            this.matchPreview = res.data.data.matchPreview // 赛事预告数据
-            this.prizeInfo = res.data.data.prizeInfo // 奖品信息
-            this.levelList = res.data.data.matchSectionBet // 关卡信息
-            this.levelList.unshift(this.levelList.pop())
-            console.log(this.levelList, 'levelList')
-            this.firstPrize = res.data.data.prizeInfo[0] || {}
-            this.secondPrize = res.data.data.prizeInfo[1] || {}
-            this.thirdPrize = res.data.data.prizeInfo[2] || {}
-            console.log(this.firstPrize, this.secondPrize, this.thirdPrize, 'firstPrize, secondPrize, thirdPrize,')
-            this.matchScore = res.data.data.matchScore // 每节得分情况
-            this.matchSectionBet = res.data.data.matchSectionBet // 每节比赛投注信息
-            // prizeModeState
-            this.lockSectionInfo = res.data.data.lockSectionInfo
-            this.isHaveMatch = true
-            // let isOncePrize = window.localStorage.getItem('isOncePrize')
-            if (res.data.data.lockSectionInfo.isLockAll === 1 && !this.isPull) {
-              this.prizeModeState = true
-              // window.localStorage.setItem('isOncePrize', true)
-            }
-            this.$loading({
-              state: false
-            })
-          } else if (res.data.errCode === 3) {
-            // that.getPageInfo()
-            // window.location.href = window.location.href
-          } else if (res.data.errCode === 1 && res.data.retCode === 1) {
-            this.isHaveMatch = false
-            this.$loading({
-              state: false
-            })
-            this.$vux.toast.show({
-              position: 'middle',
-              type: 'text',
-              width: '16em',
-              time: 1500,
-              text: '暂无比赛',
-              isShowMask: true
-            })
-          }
-        })
-      },
-      showPlugin () {
-        let that = this
-        this.$vux.confirm.show({
-          title: '操作提示',
-          content: '是否去充值页面',
-          onShow () {
-          },
-          onHide () {
-          },
-          onCancel () {
-            this.prizeModeState = false
-          },
-          onConfirm () {
-            this.prizeModeState = false
-            window.location.href = `http://hupudev.ttnba.cn?from=cjdj&user_code=${that.userCode}/#/recharge`
-          }
-        })
-      },
-      // 投注
-      joinGame () {
-        let dxf = this.levelList[this.levelIndex].dxf.temChoose
-        let spf = this.levelList[this.levelIndex].spf.temChoose
-        if (!this.isHaveMatch) {
-          this.$vux.toast.show({
-            position: 'middle',
-            type: 'text',
-            width: '16em',
-            time: 700,
-            text: '暂无比赛，请稍后再来',
-            isShowMask: true
-          })
-          return
-        }
-        if (!dxf || !spf) {
-          this.$vux.toast.show({
-            position: 'middle',
-            type: 'text',
-            width: '16em',
-            time: 700,
-            text: '请选择',
-            isShowMask: true
-          })
+      distanceNow (matchTime) {
+        let nowTime = (new Date().getTime()) / 1000
+        let hourTime
+        if (nowTime >= matchTime) {
+          hourTime = -1
+          return hourTime
         } else {
-          let myBet = {DXF: dxf, SPF: spf}
-          let params = {
-            lotyId: 'JCLQ',
-            betType: 'JCHH',
-            issueNo: this.levelList[this.levelIndex].issueNo,
-            betItemBo: JSON.stringify(myBet)
-          }
-          getJoinGuess(params).then(res => {
-            if (res.data.errCode === 0) {
-              this.$vux.toast.show({
-                position: 'middle',
-                width: '16em',
-                type: 'text',
-                time: 700,
-                text: '投注成功',
-                isShowMask: true
-              })
-              if (this.levelIndex < 4) {
-                this.levelIndex = this.levelIndex + 1
-              }
-              this.getPageInfo()
-            } else {
-              if (res.data.errCode === 2 && res.data.retCode === 2144) {
-                this.$vux.toast.show({
-                  position: 'middle',
-                  width: '16em',
-                  type: 'text',
-                  time: 700,
-                  text: '未解锁',
-                  isShowMask: true
-                })
-                this.prizeModeState = true
-              }
-            }
-            console.log(res, 'this is res now')
-          })
+          hourTime = matchTime / 3600 - nowTime / 3600
+          return Math.ceil(hourTime)
         }
       },
       // 解锁参加
-      sureJoin () {
+      sureJoin (item) {
         let params = {
           payType: 3,
-          payAmount: this.lockSectionInfo.allOpenMoney,
-          oIssueNoList: this.lockSectionInfo.lockIssueNo,
-          matchNo: this.data.matchNo,
+          payAmount: item.lockSectionInfo.allOpenMoney,
+          oIssueNoList: item.lockSectionInfo.lockIssueNo,
+          matchNo: item.matchNo,
           betType: 'JCHH',
           lotyId: 'JCLQ'
         }
@@ -604,8 +446,7 @@
               text: '已参加',
               isShowMask: true
             })
-            this.prizeModeState = false
-            this.getPageInfo()
+            this.$router.push({name: 'game'})
           } else if (res.data.retCode === 2109) {
             this.showPlugin()
           } else {
@@ -620,144 +461,63 @@
           }
         })
       },
-      hidePrizeMode () {
-        // 控制奖品弹窗
-        // console.log(0)
-        this.prizeModeState = false
-      },
-      // 跳转夺宝记录
-      goListPage () {
-        console.log('ss')
-        this.$router.push({name: 'list'})
-      },
-      // 跳转用户中心
-      goUserPage () {
-        console.log('ss')
-        this.$router.push({name: 'userCenter'})
-      },
-      // 猜胜负
-      guessWin (index, item, objIndex, e) {
-        if (item.sectionId === 5 && e === '1') {
-          return
-        }
-        if (item.state >= 2) {
-          this.$vux.toast.show({
-            position: 'middle',
-            type: 'text',
-            width: '16em',
-            time: 700,
-            text: '关卡已截至',
-            isShowMask: true
-          })
-          return
-        }
-        if (item[objIndex].myBetItem) {
-          this.$vux.toast.show({
-            position: 'middle',
-            type: 'text',
-            width: '16em',
-            time: 700,
-            text: '关卡已选择',
-            isShowMask: true
-          })
-          return
-        }
-        if (item[objIndex].temChoose === e) {
-          item[objIndex].temChoose = ''
-          this.levelList.splice(index, 1, item)
-          return
-        }
-        item[objIndex].temChoose = e
-        this.levelList.splice(index, 1, item)
-        console.log(this.levelList, 'this.levelArr[index][1]')
-        console.log(index, e)
-      },
-      // 猜大小球
-      guessScore (index, item, objIndex, e) {
-        // this.nextTick()
-        console.log(item, 'item')
-        if (item.state >= 2) {
-          this.$vux.toast.show({
-            position: 'middle',
-            type: 'text',
-            width: '16em',
-            time: 700,
-            text: '关卡已截至',
-            isShowMask: true
-          })
-          return
-        }
-        if (item[objIndex].myBetItem) {
-          this.$vux.toast.show({
-            position: 'middle',
-            type: 'text',
-            width: '16em',
-            time: 700,
-            text: '关卡已选择',
-            isShowMask: true
-          })
-          return
-        }
-        // if (item.state >= 2) {
-        //   this.$vux.toast.show({
-        //     position: 'middle',
-        //     type: 'text',
-        //     time: 700,
-        //     text: '关卡已截止',
-        //     isShowMask: true
-        //   })
-        //   return
-        // }
-        if (item[objIndex].temChoose === e) {
-          item[objIndex].temChoose = ''
-          this.levelList.splice(index, 1, item)
-          return
-        }
-        item[objIndex].temChoose = e
-        this.levelList.splice(index, 1, item)
-        console.log(this.levelList, 'this.levelArr[index][1]')
-        console.log(index, e)
+      showPlugin () {
+        let that = this
+        this.$vux.confirm.show({
+          title: '操作提示',
+          content: '是否去充值页面',
+          onShow () {
+          },
+          onHide () {
+          },
+          onCancel () {
+            this.prizeModeState = false
+          },
+          onConfirm () {
+            this.prizeModeState = false
+            window.location.href = `${that.data.rechargeUrl}?from=cjdj/#/recharge`
+            // window.location.href = `${that.data.rechargeUrl}?from=cjdj&user_code=${that.userCode}/#/recharge`
+          }
+        })
       },
       // 关卡选择
       goTab (e) {
         this.levelIndex = e
       },
+      // 去游戏内页
+      goGamePage (item) {
+        this.$router.push({name: 'game', query: {uniqueId: item.uniqueId, matchNo: item.matchNo}})
+      },
+      // 跳转用户中心
+      goUserPage () {
+        // this.geMyInfo()
+        this.$router.push({name: 'userCenter'})
+      },
       onSwiperItemIndexChange (e) {
-        console.log(e, this.levelIndex, 'e, this.levelIndex')
-        // this.levelIndex = e
+        this.levelIndex = e
       },
       showShank () {
-        console.log('shank')
         this.shank = true
       },
       hideShankNow () {
-        console.log('shank', 'hellp')
         this.shank = false
+      },
+      scrollDowns () {
+        // 触底加载+-
+      },
+      pullDowns () {
+        // 下拉刷新
       }
-    },
-    computed: {
-      ...mapState({
-        countx: state => state.lkey
-      })
-      // buttonFlag: () => {
-      //   if (this.levelList[this.levelIndex].state < 2) {
-      //     return true
-      //   } else {
-      //     return false
-      //   }
-      // }
     },
     components: {
       scroll,
       loading,
+      Divider,
+      XButton,
       XHeader,
       shank,
       SwiperItem,
-      Swiper,
-      CheckerItem,
-      Checker,
-      prizemode,
-      Confirm
+      Swiper
     }
   }
 </script>
@@ -789,40 +549,13 @@
 <style lang="stylus" scoped>
   @import "../../common/stylus/colorreset"
   @import "../../common/stylus/mixin"
-  .vux-x-icon-ios-help-outline {
-    fill: #999;
-  }
-  .cell-x-icon {
-    display: block;
-    fill: green;
-  }
   .home {
     height: 100vh;
     background-color $color-default-color;
     font-size:0.16rem;
     width: 100%;
-    position: fixed;
-    top 0
     background-color: #000;
     color: #fff;
-    .headerTop {
-      position: absolute;
-      height: .92rem;
-      top 0
-      width: 100%;
-      z-index 10
-    }
-    .scrollContent {
-      background-color: #000;
-      /*position: fixed;*/
-      height: 10rem;
-      margin-top: 46px;
-      padding-bottom:2rem;
-      .bigBox {
-        background-color: #000;
-      }
-      /*overflow: hidden;*/
-    }
     .userInfo {
       padding-left: .23rem;
       height 0.9rem;
@@ -838,7 +571,7 @@
         display: inline-block;
         .logoImg {
           width: 0.72rem;
-          height 0.72rem;
+          height: 0.72rem;
           position: absolute;
           border-radius: 50%;
           left: 50%;
@@ -868,12 +601,12 @@
         transform: translateY(-50%);
         right: 0.1rem;
         text-align: center;
-        width: 1.8rem;
+        width: 2.8rem;
         height: .6rem;
         line-height: .6rem;
         background-color: #333;
         font-size: .28rem;
-        border-radius: .12rem;
+        // border-radius: .12rem;
         color: $color-meta;
       }
     }
@@ -881,9 +614,11 @@
       /*background-color:red;*/
       /*height: 100%;*/
       position: relative;
+      margin-top .14rem
       padding-left: 0.6rem;
       background-color: #1e1e1e;
       overflow: hidden;
+      height: .5rem;
       .noticeLogo {
         position: absolute;
         top: 0;
@@ -897,7 +632,7 @@
       }
       .noticeContent {
         height: 100%;
-        width: 100%;
+        /*width: 100%;*/
         overflow: hidden;
       }
       ul{
@@ -906,11 +641,12 @@
         /*animation: barrageRun 20s linear infinite;*/
         li{
           float:left;
-          width: 5.0rem;
+          width: 6.5rem;
           height: .5rem;
           color:#fff;
           line-height: .5rem;
           overflow:hidden;
+          font-size .24rem
           text-overflow:ellipsis;
           white-space:nowrap;
           /*padding-left:2.5rem;*/
@@ -922,561 +658,217 @@
         }
       }
     }
-    .matchInfo {
-      width: 7.3rem;
-      margin: 0 auto;
-      margin-top: .12rem;
-      .teamInfo {
-        height: .4rem;
-        line-height: .4rem;
-        margin-bottom: 0.04rem;
-        font-size .24rem
-        display: flex;
-        .teamName {
-          flex: 1;
-          // background-color: #fff;
-          .nowScoreLeft {
-            width .65rem
-            text-align center
-            float right 
-            display inline-block
-            color: $color-meta
-            background-color #1e1e1e
-          }
-          .nowScoreRight {
-            width .65rem
-            text-align center
-            float left 
-            display inline-block
-            color: $color-meta
-            background-color #1e1e1e
-          }
-        }
-        .space {
-          flex: 0 0 .04rem;  
-        }
-      }
-      .matchScore {
-        height 3.5rem
-        width 100%
-        bg-image('./img/basebg')
-        background-size 7.5rem 3.5rem
-        background-position center center
-        display flex
-        justify-content center
-        align-items center
-        position relative
-        .nowUntil{
-          position absolute
-          top 0
-          left 50%
-          transform translate(-50%)
-          width 1.6rem
-          height .4rem
-          line-height  .4rem
-          border-radius 0 0 .12rem .12rem
-          text-align center
-          color #fff
-          font-size .24rem
-          background-color #5c4f3a
-        }
-        .scoreUntil {
-          width 6.1rem
-          height 1.52rem
-          background-color rgba(0,0,0,.4)
-          border-radius .08rem
-          display flex
-          justify-content center
-          .teamBoth {
-            flex 2
-            font-size .24rem
-            .everyNode {
-              width 100%
-              height .32rem
-              line-height .32rem
-              color #838280
-            }
-            .middle {
-              width 90%
-              padding-left 10%
-              height .72rem
-              line-height .72rem
-              text-align center
-            }
-            .bottom {
-              width 90%
-              padding-left 10%
-              height .46rem
-              line-height .46rem
-            }
-          }
-          .chooseUntil {
-            flex 1 
-            text-align center
-            .everyNode {
-              width 100%
-              height .32rem
-              line-height .32rem
-              color #838280
-            }
-            .middle {
-              width 100%
-              height .72rem
-              line-height .72rem
-            }
-            .bottom {
-              width 100%
-              height .46rem
-              line-height .46rem
-            }
-          }
-          .allMatch {
-            .middle {
-              color: $color-meta
-            }
-            .bottom {
-              color: $color-meta
-            }
-          }
-        }
-      }
-      .joinPeople {
-        height .66rem
-        line-height .66rem
-        width 100%
-        border-style dotted
-        display flex
-        justify-content space-between
-        .people {
-          font-size .24rem
-        }
-        .aboutShank {
-          padding-right .3rem
-          bg-image('./img/shank')
-          line-height .70rem
-          background-size .26rem .24rem
-          background-position center right
-          background-repeat no-repeat
-        }
-      }
-    }
-    .levelTab {
-      display flex
-      width 7.3rem
-      margin 0 auto
-      height 1.08rem
-      justify-content space-between
-      align-items center
-      .tabList {
-        flex 0 0 1.32rem
-        height .66rem
-        line-height: .66rem;
-        color #ccc
-        font-size .28rem
-        background-color: #1e1e1e;
-        /*background-color: #fff;*/
-        border: 0.02rem solid #1e1e1e;
-        text-align center
-        border-radius .4rem
-        &.ended {
-          border-color: #332900
-          color: #999
-        }
-        &.choose {
-          border-color: $color-meta
-          color: $color-meta
-        }
-      }
-    }
-    .rule {
-      height .3rem
-      line-height .3rem
-      color #999
-      display flex
-      justify-content center
-      font-size .26rem
-      .ruleText {
-        height .3rem
-        line-height .3rem
-      }
-      .questionIcon {
-        transform translateY(-0.15rem)
-        height .52rem
-        line-height .52rem
-      }
-    }
-    .choiceContent {
-      margin-top .22rem
-      height 3.28rem
-      width 100%
+    .noticeB {
+      /*background-color:red;*/
+      /*height: 100%;*/
       position: relative;
-      .guessMask {
+      margin-top .14rem
+      padding-left: 0.6rem;
+      background-color: #1e1e1e;
+      overflow: hidden;
+      height: .5rem;
+      .noticeLogo {
         position: absolute;
-        width: 100%;
-        height: 100%;
         top: 0;
+        left: 0;
+        width: .6rem;
+        height: .5rem;
+        bg-image('./img/notice')
+        background-size: .37rem .31rem;
+        background-position: center center;
+        background-repeat: no-repeat;
       }
-      .guessContent {
-        height 100%
-        width: 7.32rem;
-        margin 0 auto
-        .guessTop {
-          height: 1.6rem;
-          width: 100%;
+      .noticeContent {
+        height: 100%;
+        /*width: 100%;*/
+        overflow: hidden;
+      }
+      .divBox{
+        /*width: 1100%;*/
+        height: 100%;
+        wrap: no-wrap;
+        /*display: flex;*/
+        /*justify-content: center;*/
+        /*flex-wrap: no-wrap*/
+        /*animation: barrageRun 20s linear infinite;*/
+        span {
+          display inline-block
+          line-height: .5rem;
+          padding: 0 .2rem
+          font-size .2rem
+        }
+        li{
+          float:left;
+          width: 6.5rem;
+          height: .5rem;
+          color:#fff;
+          line-height: .5rem;
+          overflow:hidden;
           font-size .24rem
-          background-color: #1e1e1e;
-          margin-bottom 0.08rem
-          display flex
-          align-items center
-          /*justify-content center*/
-          .guessTitle {
-            margin-right .19rem
-            width: .56rem;
-            padding-top .32rem
-            height 1.28rem
-            line-height: .32rem;
-            background-color: $color-meta;
-            font-size .3rem
-            color #000
-            position: relative;
-            .arrowRight {
-              position: absolute;
-              right: -0.42rem;
-              top: 50%;
-              transform: translateY(-50%);
-              border: .24rem solid $color-meta;
-              border-top-color: transparent;
-              border-right-color: transparent;
-              border-bottom-color: transparent;
-            }
-          }
-          .spaceLine {
-            flex 0 0 0.04rem
-            height .68rem
-            background-color: #000;
-          }
-          .chooseUntil {
-            flex 1
-            height 1.56rem
-            border: 0.02rem solid #1e1e1e;
-            .scoreAll {
-              width: 100%;
-              color: #999
-              height 1.56rem
-              line-height: 1.56rem;
-              text-align center
-            }
-            .teamLogo {
-              margin 0 auto
-              width .6rem
-              height .6rem
-              margin-top .18rem
-              border-radius 50%
-              background-size: .6rem .6rem;
-              background-position: center center;
-              bg-image('./img/before/basketball')
-              img {
-                width: 100%;
-                height: 100%;
-                border-radius: 50%;
-              }
-            }
-            .teamName {
-              text-align: center;
-              margin-top .2rem
-            }
-            &.choosed {
-              .teamLogo {
-                bg-image('./img/choosed/basketball')
-              }
-              border-color: $color-meta;
-              color:$color-meta
-            }
-            &.chooseErr {
-              .teamLogo {
-                bg-image('./img/after/basketball')
-              }
-              border-color: #645218;
-              color #645218
-            }
-            &.choosePass {
-              .teamLogo {
-                /*bg-image('./img/after/basketball')*/
-              }
-              border-color: $color-meta;
-            }
-            &.result {
-              position: relative;
-              color red
-              &:before {
-                content ''
-                width: .58rem;
-                height: .58rem;
-                position: absolute;
-                top 0
-                right 0
-                bg-image('./img/corner')
-                background-size: .58rem .58rem ;
-              }
-            }
+          text-overflow:ellipsis;
+          white-space:nowrap;
+          /*padding-left:2.5rem;*/
+          text-align: left;
+          /*text-align: center;*/
+          span{
+            color: #ffc813;
           }
         }
-        .guessBottom {
-          height: 1.6rem;
-          width: 100%;
-          font-size .24rem
-          display flex
-          align-items center
+      }
+    }
+    .swiperContainer {
+      width: 100%;
+      height 400px
+      margin 0 auto
+      margin-top 1.0rem
+      touch-action none
+      .dx {
+        /*height 440px !important*/
+        /*width 6rem*/
+        .botS {
+          background-color blue
+        }
+      }
+      .vux-indicator-center > a {
+        width .6rem
+        height .6rem
+      }
+      .vux-swiper-item {
+        display flex 
+        justify-content center
+      }
+      .vux-swiper {
+        /*width: 3rem;*/
+        .swiperUntil {
           background-color: #1e1e1e;
-          .guessTitle {
-            margin-right .19rem
-            width: .56rem;
-            padding-top .18rem
-            height 1.42rem
-            line-height: .32rem;
-            background-color: $color-meta;
-            font-size .3rem
-            color #000
-            position: relative;
-            .arrowRight {
-              position: absolute;
-              right: -0.42rem;
-              top: 50%;
-              transform: translateY(-50%);
-              border: .24rem solid $color-meta;
-              border-top-color: transparent;
-              border-right-color: transparent;
-              border-bottom-color: transparent;
-            }
-          }
-          .spaceLine {
-            flex 0 0 0.04rem
-            height .68rem
-            background-color: #000;
-          }
-          .chooseUntil {
+          width 5.7rem
+          height 100%
+          display flex
+          flex-direction column
+          justify-content center
+          text-align center
+          .topB {
             flex 1
-            height 1.56rem
-            border: 0.02rem solid #1e1e1e;
-            .teamLogo {
-              /*border-radius 50%*/
-              margin 0 auto
-              width .6rem
-              height .6rem
-              margin-top .18rem
+            border: .02rem solid #333333;
+            .downTime {
+              margin-left: .1rem
+              padding-left .25rem
+              height: .42rem;
+              font-size: .18rem;
+              line-height: .42rem;
+              text-align left
+              bg-image('./img/time')
+              background-position: left center;
+              background-size: .25rem .24rem;
+              background-repeat: no-repeat;
+            }
+            .battleBoth {
+              margin-top .26rem
+              .top {
+                height: .82rem;
+                line-height: .82rem;
+                font-size .24rem
+                color $color-meta
+              }
+              .both {
+                display flex
+                justify-content center
+                height: 2.1rem;
+                .homeTeam {
+                  flex 211
+                  .logo {
+                    height: 1.1rem;
+                    padding-top: .2rem;
+                    img {
+                      height: 0.97rem;
+                      width: 1.2rem;
+                      border-radius 50%
+                    }
+                  }
+                  .name {
+                    height: .6rem;
+                    line-height: .6rem
+                    font-size .24rem
+                  }
+                }
+                .vs {
+                  flex 143
+                  height: 1.3rem;
+                  line-height: 1.3rem;
+                  font-size .52rem
+                  font-weight bold
+                }
+                .noVs {
+                  font-size .4rem
+                  font-weight bold
+                }
+                .guestTeam {
+                  flex 211
+                  .logo {
+                    height: 1.1rem;
+                    padding-top: .2rem;
+                    img {
+                      height: .97rem;
+                      width: 1.2rem;
+                      border-radius 50%
+                    }
+                  }
+                  .name {
+                    height: .6rem;
+                    line-height: .6rem
+                    font-size .24rem
+                  }
+                }
+              }
+            }
+            .prize {
+              height: 1.78rem;
+              line-height: 1.78rem;
+              font-size: .38rem;
+              bg-image('./img/prizebg')
+              background-size: 4.68rem 1.78rem;
               background-repeat: no-repeat;
               background-position: center center;
-              &.upScore {
-                bg-image('./img/before/up')
-                background-size: .39rem .5rem;
-              }
-              &.isScore {
-                background-size: .54rem .22rem;
-                bg-image('./img/before/equalto')
-              }
-              &.downScore {
-                background-size: .39rem .5rem;
-                bg-image('./img/before/down')
-              }
-              img {
-                width: 100%;
-                height: 100%;
-                border-radius: 50%;
-              }
-            }
-            .teamName {
-              text-align: center;
-              margin-top .2rem
-            }
-            &.choosed {
-              border-color: $color-meta;
-              color:$color-meta
-              .teamLogo {
-                &.upScore {
-                  bg-image('./img/choosed/up')
-                }
-                &.isScore {
-                  bg-image('./img/choosed/equalto')
-                }
-                &.downScore {
-                  bg-image('./img/choosed/down')
-                }
-              }
-            }
-            &.chooseErr {
-              border-color: #645218;
-              color #645218
-              .teamLogo {
-                &.upScore {
-                  bg-image('./img/after/up')
-                }
-                &.isScore {
-                  bg-image('./img/after/equalto')
-                }
-                &.downScore {
-                  bg-image('./img/after/down')
-                }
-              }
-            }
-            &.choosePass {
-              .teamLogo {
-                /*bg-image('./img/after/basketball')*/
-              }
-              border-color: $color-meta;
-            }
-            &.result {
               position: relative;
-              color red
-              &:before {
-                content ''
-                width: .58rem;
-                height: .58rem;
+              color: #fffc91;
+              .prizeText {
+                height: .5rem;
+                line-height: .5rem
+                width: 100%;
                 position: absolute;
-                top 0
-                right 0
-                bg-image('./img/corner')
-                background-size: .58rem .58rem ;
+                left 50%
+                top 50%
+                font-weight bold
+                transform translate(-50%, -50%)
+                background: linear-gradient( #fffc91, #ffce05);
+                -webkit-background-clip: text;
+                color: transparent;
               }
             }
-          }
-        }
-      }
-    }
-    .ordersButton {
-      height: .6rem;
-      line-height: .6rem;
-      width: 7.3rem;
-      margin 0 auto
-      margin-top .24rem
-      .button {
-        /*float right*/
-        position: absolute;
-        z-index 100
-        right .1rem
-        width 1.8rem
-        height: .6rem;
-        font-size .3rem
-        text-align center
-        color #000
-        border-radius .1rem
-        background-color: $color-meta;
-      }
-    }
-    .prize {
-      width: 7.30rem;
-      margin 0 auto
-      .prizeTitle {
-        width: 100%;
-        height: .62rem;
-        line-height: .62rem;
-        font-size .24rem
-        span {
-          color #ccc
-          font-size .22rem
-          padding-left .4rem
-        }
-      }
-      .prizeInfo {
-        height: 2.71rem;
-        background-color: #1e1e1e;
-        border-radius: .12rem
-        display flex
-        div {
-          display flex
-          justify-content: center;
-          align-items: center;
-          flex-wrap: wrap;
-          .passLevel {
-            height: .56rem;
-            line-height: .56rem;
-            width: 100%;
-            font-weight: bold;
-            font-size .26rem
-          }
-          .prizeImg {
-            width: 1.26rem;
-            height: .81rem;
-            border-radius: .1rem;
-            overflow: hidden;
-            img {
-              width: 100%;
-              height: 100%;
+            .playNotice {
+              margin-top .3rem
+              height: .56rem;
+              line-height: .56rem;
+              color: #999
+              font-size .24rem
             }
           }
-          .prizeName {
-            width: 100%;
-            height: .6rem;
-            line-height: .6rem;
-            font-size .21rem
+          .bottom {
+            flex 0 0 1.04rem
+            line-height 1.04rem
+            /*font-weight bold*/
+            color #000
+            font-size .34rem
+            background-color $color-meta
           }
-        }
-        .left {
-          flex 3
-        }
-        .middle {
-          flex 4
-          .passLevel {
-            font-size .3rem
-          }
-          .prizeImg {
-            width: 1.64rem;
-            height: .92rem;
-          }
-          .prizeName {
-            color: $color-meta
-            font-weight: bold;
-            font-size .3rem
-          }
-        }
-        .right {
-          flex 3
-        }
-      }
-    }
-    .matchListBox {
-      width: 7.3rem;
-      margin 0 auto
-      margin-top .1rem
-      .matchListTitle {
-        height: .62rem;
-        line-height: .62rem;
-        width: 100%;
-        font-size .24rem
-      }
-      .matchLists {
-        background-color: #1e1e1e;
-        color #999
-        border-radius .1rem
-        padding 0 .12rem .16rem
-        overflow: hidden;
-        li {
-          height: .8rem;
-          line-height: .8rem;
-          font-size .24rem
-          overflow: hidden;
-          span {
-            display inline-block
-            vertical-align middle
-          }
-          .battleBoth {
-            width: 1.1rem;
-            text-align: center;
-          }
-          .timeFormat {
-            width: 1.8rem;
-            text-align: center;
-          }
-          .totalPrize {
-            width: 2.2rem;
+          .green {
+            background-color: #7ad06d;
+            color #fff
           }
         }
       }
     }
-    .img {
-      background-color: red;
-      width: .3rem;
-      height: .4rem;
-      }}
+  }
   .fade-enter-active, .fade-leave-active {
       animation: scale 0.5s;
     }

@@ -1,12 +1,12 @@
 <template>
   <div class="container gradient relative">
-    <x-header style="background-color:#ffcc00;arrow-color:#fff;" :left-options="{backText: ''}">{{$t('kiting.title')}}</x-header>
-    <div style="height:.30rem;"></div>
+    <!--<x-header style="background-color:#ffcc00;arrow-color:#fff;" :left-options="{backText: ''}">{{$t('kiting.title')}}</x-header>-->
+    <div style="height:1.20rem;"></div>
     <!--提现-->
     <div v-if="drawAccountBind" class="center borderR">
       <div class="account clearfix bline">
         <div class="left " style="width: 100%;height:1.50rem;">
-          <div class="font30 ellipsis text-center" style="width: 100%;line-heigth:.60rem;height:.60rem;font-size:.3rem">红包余额</div>
+          <div class="font30 ellipsis text-center" style="width: 100%;line-heigth:.60rem;height:.60rem;line-height:.60rem;font-size:.3rem">红包余额</div>
           <div class="font42 ellipsis text-center" style="width: 100%;line-height:.75rem;font-size:.5rem;height:.90rem;">¥{{userInfo.cash}}</div>
         </div>
         <!--<div class="lf rline" style="height:80%; margin-top:.26rem;"></div>-->
@@ -165,7 +165,6 @@
       // 去绑定账号
       goBind (options) {
         let toBind = options
-        console.log(toBind)
         this.toBind = toBind
       },
       // 验证身份证正确性
@@ -209,7 +208,6 @@
         }
         // if (this.actionType == 2) params.authCode = 1232
         fetchBindPhone(params).then(res => {
-          console.log(res, 'res')
           if (res.data.errCode === 0) {
             this.getCode = true
             this.downTimeFun(60)
@@ -229,7 +227,6 @@
       bindName: function () {
         let valName = this.userRealName
         let valId = this.identityNo
-        console.log(valName, 'valuname')
         if (!(/^[\u4e00-\u9fa5]{2,5}$/).test(valName)) {
           this.$toast({
             message: '请输入正确的中文名字',
@@ -397,12 +394,12 @@
           drawType: 1 // 1-支付宝 2-微信
         }
         fetchKiting(params).then(res => {
-          console.log(res, 'res110')
           if (res.data.errCode === 0) {
             this.$vux.toast.show({
               position: 'middle',
               time: 700,
               type: 'text',
+              width: '16em',
               text: '提现成功，请注意查收',
               isShowMask: true
             })
@@ -412,6 +409,7 @@
             this.$vux.toast.show({
               position: 'middle',
               time: 700,
+              width: '16em',
               type: 'text',
               text: res.data.msg,
               isShowMask: true
@@ -422,7 +420,6 @@
       },
       // 确认绑定 修改 type 1: 手机号绑定 2：身份信息绑定 3：提款账号绑定
       sure (type) {
-        console.log(type, 'type')
         switch (type) {
           case 1:
             if (!this.phone) { // 手机号码为空
@@ -472,7 +469,6 @@
               authCode: this.authCode
             }
             fetchBindPhone(params).then(res => {
-              console.log(res, 'res')
               if (res.data.errCode === 0) {
                 // wx.showToast({
                 //   title: "手机号码绑定成功",
@@ -514,7 +510,6 @@
       },
       // 编辑
       edit () {
-        console.log('isEdit')
         this.isEdit = true
       },
       // 倒计时

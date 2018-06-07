@@ -25,7 +25,6 @@ let config = {
     lkey: lkey
   }
 }
-console.log(config)
 // 拦截请求
 axios.interceptors.request.use((config) => {
   // console.log(config)
@@ -34,7 +33,6 @@ axios.interceptors.request.use((config) => {
   return Promise.reject(error)
 })
 axios.interceptors.response.use((data) => {
-  console.log(data.data, 'tada', intance)
   if (data.data.errCode === 3 && data.data.retCode === 3) {
     console.log('未登录11111111111111111111111')
     intance.$loading({

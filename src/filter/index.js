@@ -67,15 +67,14 @@ export let sexFilter = (value) => {
   return sexStr
 }
 // 比赛过滤器
-export let matchStateType = (value, matchState) => {
+export let matchStateType = (value, matchTime) => {
   let sexStr = ''
   switch (value) {
     case 0:
-      if (matchState === 0) {
-        sexStr = '未开赛'
-      } else {
-        sexStr = '第一节'
-      }
+      sexStr = timeFormat(matchTime, 'M/d hh:mm')
+      break
+    case 1:
+      sexStr = '第一节'
       break
     case 2:
       sexStr = '第二节'
@@ -87,7 +86,19 @@ export let matchStateType = (value, matchState) => {
       sexStr = '第四节'
       break
     case 5:
+      sexStr = '中场休息'
+      break
+    case 6:
       sexStr = '全场结束'
+      break
+    case 7:
+      sexStr = '加时赛1'
+      break
+    case 8:
+      sexStr = '加时赛2'
+      break
+    case 9:
+      sexStr = '加时赛3'
       break
     default:
       sexStr = '未开赛'
@@ -143,4 +154,17 @@ export let getNow = (useTime) => { // 获取的是否是今天...
     }
   }
   return chineaseData
+}
+
+// 现在距离比赛的时间 h
+export let distanceNow = (matchTime) => {
+  let nowTime = (new Date().getTime()) / 1000
+  let hourTime
+  if (nowTime >= matchTime) {
+    hourTime = -1
+    return hourTime
+  } else {
+    hourTime = matchTime / 3600 - nowTime / 3600
+    return Math.ceil(hourTime)
+  }
 }

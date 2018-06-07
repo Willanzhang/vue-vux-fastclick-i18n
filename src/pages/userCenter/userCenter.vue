@@ -2,7 +2,7 @@
 <transition name="slide">
   <div class="userCenter">
     <div class="fixedBox">
-      <x-header style="background-color:#ffcc00;arrow-color:#fff;" :left-options="{backText: ''}">{{$t('userCenter.title')}}</x-header>
+      <!--<x-header style="background-color:#ffcc00;arrow-color:#fff;" :left-options="{backText: ''}">{{$t('userCenter.title')}}</x-header>-->
       <div class="userInfo">
         <div class="userLogo">
           <div class="logoImg" @click="goUserPage">
@@ -13,7 +13,7 @@
           {{userInfo.nickname}}
         </div>
         <div class="redPackage ellipsis">
-          现金红包
+          红包账户：
         </div>
         <div class="cash ellipsis">
           ¥{{userInfo.crashAmount}}
@@ -50,57 +50,16 @@
             </div>
           </div>
           <div class="bottom">
-            <p class="left">过关：<span class="passLevel">{{item.luckyGuessPassNum}}</span>/<span class="totalLevel">{{item.joinGuessPassNum}}</span></p>
+            <p class="left">猜中次数：<span class="passLevel">{{item.luckyGuessPassNum}}</span>/<span class="totalLevel">{{item.joinGuessPassNum}}</span></p>
             <p class="right noPrize">
               <span v-if="item.planState==0" :class="{'State0':item.planState==0}">未开赛</span>
               <span v-else-if="item.planState==1" :class="{'State1':item.planState==1}">等待派奖</span>
               <span v-else-if="item.planState==2" :class="{'State2':item.planState==2}">未中奖</span>
-              <span v-else="item.planState==3" :class="{'State3':item.planState==3}">夺得{{item.goldPrize}}元现金红包</span>
+              <span v-else="item.planState==3" :class="{'State3':item.planState==3}">夺得{{item.jackpot}}元红包</span>
             </p>
           </div>
         </li>
-        <li v-for="(item, index) in recordsList">
-          <div class="top bline xv">
-            <p class="matchDate">{{item.timeDesc}}</p>
-            <div class="teamgroup">
-              <p class="mathcTeam ellipsis">{{item.homeTeamName}}</p>
-              <p class="teamScore">{{item.planState != 1?item.homeTeamScore:''}}</p>
-              <p class="battle">VS</p>
-              <p class="teamScore">{{item.planState != 1?item.guestTeamScore: ''}}</p>
-              <p class="mathcTeam ellipsis">{{item.guestTeamName}} </p>
-            </div>
-          </div>
-          <div class="bottom">
-            <p class="left">过关：<span class="passLevel">{{item.luckyGuessPassNum}}</span>/<span class="totalLevel">{{item.joinGuessPassNum}}</span></p>
-            <p class="right noPrize">
-              <span v-if="item.planState==0" :class="{'State0':item.planState==0}">未开赛</span>
-              <span v-else-if="item.planState==1" :class="{'State1':item.planState==1}">等待派奖</span>
-              <span v-else-if="item.planState==2" :class="{'State2':item.planState==2}">未中奖</span>
-              <span v-else="item.planState==3" :class="{'State3':item.planState==3}">夺得{{item.goldPrize}}元现金红包</span>
-            </p>
-          </div>
-        </li>
-        <li v-for="(item, index) in recordsList">
-          <div class="top bline xv">
-            <p class="matchDate">{{item.timeDesc}}</p>
-            <div class="teamgroup">
-              <p class="mathcTeam ellipsis">{{item.homeTeamName}}</p>
-              <p class="teamScore">{{item.planState != 1?item.homeTeamScore:''}}</p>
-              <p class="battle">VS</p>
-              <p class="teamScore">{{item.planState != 1?item.guestTeamScore: ''}}</p>
-              <p class="mathcTeam ellipsis">{{item.guestTeamName}} </p>
-            </div>
-          </div>
-          <div class="bottom">
-            <p class="left">过关：<span class="passLevel">{{item.luckyGuessPassNum}}</span>/<span class="totalLevel">{{item.joinGuessPassNum}}</span></p>
-            <p class="right noPrize">
-              <span v-if="item.planState==0" :class="{'State0':item.planState==0}">未开赛</span>
-              <span v-else-if="item.planState==1" :class="{'State1':item.planState==1}">等待派奖</span>
-              <span v-else-if="item.planState==2" :class="{'State2':item.planState==2}">未中奖</span>
-              <span v-else="item.planState==3" :class="{'State3':item.planState==3}">夺得{{item.goldPrize}}元现金红包</span>
-            </p>
-          </div>
-        </li>
+        <div class="goHome" v-if="recordsList.length <= 0" @click="goHome">您已错过无数大奖，赶紧报名参与</div>
       </ul>
     </scroll>
     <transition name="fade">
@@ -155,6 +114,9 @@
       clearInterval(this.runTimer)
     },
     methods: {
+      goHome () {
+        this.$router.push({name: 'home', query: {userCode: localStorage.getItem('userCodeNBA')}})
+      },
       _getGuessRecordList ({page = 0}) {
         // alert(0)
         // 获取竞猜记录
@@ -181,7 +143,6 @@
       },
       // 跳转夺宝记录
       goKitingPage () {
-        console.log('ss')
         if (this.userInfo.crashAmount === 0) {
           this.$vux.toast.show({
             position: 'middle',
@@ -197,24 +158,20 @@
       },
       // 跳转用户中心
       goUserPage () {
-        console.log('ss')
         this.$router.push({name: 'userCenter'})
       },
 
       onSwiperItemIndexChange (e) {
-        console.log(e, 'index 12', this.levelIndex)
         this.levelIndex = e
       },
       showShank () {
-        console.log('shank')
         this.shank = true
       },
       hideShankNow () {
-        console.log('shank', 'hellp')
         this.shank = false
       },
+      // 下拉刷新
       pullUp () {
-        console.log('下拉加载中')
         if (this.page < this.totalPage) {
           this.page = this.page + 1
           this._getGuessRecordList({page: this.page})
@@ -225,10 +182,8 @@
         this.loadMore()
       },
       pullDowns () {
-        // 下拉刷新
       },
       scrolls () {
-        // console.log('在滚动')
       },
       // 加载更多
       loadMore () {
@@ -250,22 +205,6 @@
     }
   }
 </script>
-
-<!--// <style lang="stylus" scoped>
-//   // @import "../../common/stylus/colorreset"
-//   // @import "../../common/stylus/marginAndsize"
-//   @import "../../common/stylus/mixin"
-//   // @import "../../common/stylus/fontsize"
-  
-//   .home
-//     font-size:0.3rem
-//   .img
-//     width: 2.0rem
-//     height 3.0rem
-//     bg-image('./img/dot')
-    
-// </style>  -->
-
 <style lang="stylus" scoped>
   @import "../../common/stylus/colorreset"
   @import "../../common/stylus/mixin"
@@ -320,14 +259,14 @@
         }
       }
       .redPackage {
-        width: 1.4rem;
+        /*width: 1.4rem;*/
         height: 100%;
         line-height: .9rem;
         display: inline-block;
         text-align: center;
       }
       .cash {
-        width: 1.7rem;
+        width: 1.5rem;
         height: 100%;
         line-height: .9rem;
         display: inline-block;
@@ -336,7 +275,7 @@
       .nickname {
         vertical-align: middle;
         display: inline-block;
-        width: 1.2rem;
+        width: 1.7rem;
         height: 100%;
         font-size: .24rem;
         line-height: .9rem;
@@ -389,7 +328,8 @@
     .scrollContent {
       background-color: #000;
       // height:100vh
-      margin-top:3rem
+      margin-top: 2.1rem;
+      /*margin-top:3rem*/
       height:10rem
       // padding-bottom:3rem
       // /*height:9rem*/
@@ -406,6 +346,7 @@
           height: .2rem;
         }
         li {
+          touch-action: none;
           margin-top 0.12rem
           background-color: #fff;
           padding 0 .24rem
@@ -452,7 +393,7 @@
             }
             .battle {
               width: .5rem;
-              font-size .12rem;
+              font-size .16rem;
               text-align:center !important;
             }
           }
@@ -462,7 +403,8 @@
             font-size 0.3rem 
             color #666
             .left {
-              width: 2rem;
+              width: 3rem;
+              /*height: .98rem;*/
               float left
               .passLevel {
                 font-size .32rem 
@@ -497,6 +439,14 @@
             }
           }
         }
+      }
+      .goHome {
+        height: .4rem;
+        line-height: .4rem;
+        padding-top: 2.4rem;
+        text-align: center;
+        color: $color-meta;
+        font-size: .24rem
       }
     }
   }
